@@ -1,13 +1,28 @@
 use std::fs::File;
 use std::io::prelude::*;
 
-pub(crate) const WIDTH: u16 = 640;
-pub(crate) const HEIGHT: u16 = 480;
+pub(crate) const WIDTH: u32 = 640;
+pub(crate) const HEIGHT: u32 = 480;
 const BUFF_SIZE: u32 = (WIDTH as u32 * HEIGHT as u32 * 3) as u32;
 
-fn fill_buffer(buffer: &mut [u8]) {
-    for elem in buffer {
-        *elem = 128;
+fn plot_pixel(buffer: &mut [u8], x: u32, y: u32, colour: u32) {
+    let index = x * 3 + y * WIDTH * 3;
+    println!("{:?}", index);
+    buffer[index as usize] = ((colour >> 16) & 0xff) as u8; //r
+    buffer[(index + 1) as usize] = ((colour >> 8) & 0xff) as u8; //g
+    buffer[(index + 2) as usize] = ((colour >> 0) & 0xff) as u8; //b
+}
+
+fn fill_buffer(buffer: &mut [u8], colour: u32) {
+    let mut elem: i32 = 0;
+    loop {
+        buffer[elem as usize] = ((colour >> 16) & 0xff) as u8; //r
+        buffer[(elem + 1) as usize] = ((colour >> 8) & 0xff) as u8; //g
+        buffer[(elem + 2) as usize] = ((colour >> 0) & 0xff) as u8; //b
+        elem += 3;
+        if elem >= (buffer.len() - 3) as i32 {
+            break;
+        }
     }
 }
 
@@ -24,7 +39,8 @@ fn main() -> std::io::Result<()> {
         let mut file = File::create("test.ppm")?;
         let mut buffer: [u8; BUFF_SIZE as usize] = [0; BUFF_SIZE as usize];
         // Write a slice of bytes to the file
-        fill_buffer(&mut buffer);
+        fill_buffer(&mut buffer, 0xffffff);
+        plot_pixel(&mut buffer, 320, 240, 0xff00FF);
         display_buffer(&mut file, &buffer)?;
     }
 
