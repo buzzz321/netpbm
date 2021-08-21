@@ -5,6 +5,16 @@ pub(crate) const WIDTH: u32 = 640;
 pub(crate) const HEIGHT: u32 = 480;
 const BUFF_SIZE: u32 = (WIDTH as u32 * HEIGHT as u32 * 3) as u32;
 
+fn draw_line(buffer: &mut [u8], x1: u32, y1: u32, x2: u32, y2: u32, colour: u32) {
+    let k = (y2 - y1) as f32 / (x2 - x1) as f32;
+    //y=kx+m 0> m=y-kx
+    let m: f32 = y1 as f32 - k * (x1 as f32);
+    for x in x1..x2 {
+        let y = (k * (x as f32) + m) as u32;
+        plot_pixel(buffer, x, y, 0x00ff00, colour);
+    }
+}
+
 fn plot_pixel(buffer: &mut [u8], x: u32, y: u32, colour: u32, size: u32) {
     for numpixy in 0..size {
         for numpix in 0..size {
@@ -46,6 +56,7 @@ fn main() -> std::io::Result<()> {
         // Write a slice of bytes to the file
         fill_buffer(&mut buffer, 0xffffff);
         plot_pixel(&mut buffer, 320, 240, 0xff00FF, 8);
+        draw_line(&mut buffer, 0, 0, 636, 479, 4);
         display_buffer(&mut file, &buffer)?;
     }
 
